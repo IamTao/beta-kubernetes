@@ -8,19 +8,19 @@ spec:
   volumes:
     - name: site-data
       persistentVolumeClaim:
-      claimName: pvc-nfs-mlo
+        claimName: pvc-nfs-mlo
     - hostPath:
-      path: /usr/lib/nvidia-375/bin
+        path: /usr/lib/nvidia-375/bin
       name: bin
     - hostPath:
-      path: /usr/lib/nvidia-375
+        path: /usr/lib/nvidia-375
       name: lib
   containers:
     - name:  ml
       image: ntxvm015.iccluster.epfl.ch/mlo/ml_prod:1.0
       resources:
         limits:
-          alpha.kubernetes.io/nvidia-gpu: 2
+          alpha.kubernetes.io/nvidia-gpu: 1
       ports:
         - containerPort: 8888
           name: notebook

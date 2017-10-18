@@ -17,10 +17,13 @@ spec:
       name: lib
   containers:
     - name:  ml
+      imagePullPolicy: Always
       image: ntxvm015.iccluster.epfl.ch/mlo/ml_prod:1.0
+      securityContext:
+        privileged: true
       resources:
         limits:
-          alpha.kubernetes.io/nvidia-gpu: 1
+          alpha.kubernetes.io/nvidia-gpu: 2
       ports:
         - containerPort: 8888
           name: notebook

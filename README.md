@@ -133,3 +133,6 @@ $ kubectl get pod pod-ml -o yaml | grep hostIP
 
 $ curl -v http://10.xx.yy.z:30380
 ```
+
+### Tips
+* To avoid `sudo: no tty present and no askpass program specified`, please use `sudo -S xxx`.

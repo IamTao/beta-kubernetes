@@ -1,4 +1,4 @@
-FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
+FROM nvidia/cuda:8.0-cudnn7-devel-ubuntu16.04
 MAINTAINER Tao Lin <itamtao@gmail.com>
 
 RUN "sh" "-c" "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
@@ -64,8 +64,9 @@ ENV MINICONDA_VERSION 4.3.21
 ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
     NB_USER=mlo \
-    NB_UID=1000 \
-    NB_GID=100 \
+    NB_UID=144057 \
+    NB_GROUP=lin \
+    NB_GID=11169 \
     LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
@@ -74,8 +75,9 @@ ENV PATH=$CONDA_DIR/bin:$PATH \
 
 # Create user with UID=1000 and in the 'users' group
 # and make sure these dirs are writable by the `users` group.
-ADD fix-permissions /usr/local/bin/fix-permissions
+ADD ml/fix-permissions /usr/local/bin/fix-permissions
 RUN chmod +x /usr/local/bin/fix-permissions
+RUN groupadd $NB_GROUP -g $NB_GID
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     echo "${NB_USER}:${NB_USER}" | chpasswd && \
     usermod -aG sudo,adm ${NB_USER} && \
@@ -85,7 +87,7 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     fix-permissions $CONDA_DIR
 
 ############ user: user permission
-USER $NB_USER
+# USER $NB_USER
 
 # Setup work directory for backward-compatibility
 RUN mkdir $HOME/notebooks && fix-permissions $HOME
@@ -171,15 +173,15 @@ RUN conda install --quiet --yes -c soumith magma-cuda80  # or magma-cuda75 if CU
 RUN conda install --quiet --yes pytorch torchvision
 
 ############ user: root permission
-USER root
+# USER root
 WORKDIR $HOME/notebooks
 
 # Add local files as late as possible to avoid cache busting
-COPY start.sh /usr/local/bin/
-COPY start-notebook.sh /usr/local/bin/
-COPY start-singleuser.sh /usr/local/bin/
+COPY ml/start.sh /usr/local/bin/
+COPY ml/start-notebook.sh /usr/local/bin/
+COPY ml/start-singleuser.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/*
-COPY jupyter_notebook_config.py /etc/jupyter/
+COPY ml/jupyter_notebook_config.py /etc/jupyter/
 RUN fix-permissions /etc/jupyter/
 
 # Configure container startup

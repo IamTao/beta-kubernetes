@@ -3,10 +3,10 @@ services:
     mlo_ml:
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: ml/Dockerfile
         image:  ntxvm015.iccluster.epfl.ch/mlo/ml:1.0
     mlo_ml_prod:
         build:
             context: .
-            dockerfile: Dockerfile.prod
+            dockerfile: ml_prod/Dockerfile.prod
         image:  ntxvm015.iccluster.epfl.ch/mlo/ml_prod:1.0

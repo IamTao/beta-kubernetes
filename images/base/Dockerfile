@@ -1,46 +1,61 @@
-FROM nvidia/cuda:8.0-cudnn7-devel-ubuntu16.04
+FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04
 
 MAINTAINER Tao Lin <itamtao@gmail.com>
 
 # configure some environments.
 RUN "sh" "-c" "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
 
-# install some good tools.
+# install some necessary tools.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        sudo \
-        cmake \
         build-essential \
         ca-certificates \
-        curl \
-        wget \
+        pkg-config \
+        software-properties-common
+RUN apt-get install -y \
+        inkscape \
+        jed \
+        libsm6 \
+        libxext-dev \
+        libxrender1 \
+        lmodern \
+        libcurl3-dev \
         libfreetype6-dev \
         libpng12-dev \
         libzmq3-dev \
+        libcupti-dev \
         pkg-config \
+        libav-tools \
+        libjpeg-dev zlib1g-dev \
+        locales
+RUN apt-get install -y \
+        sudo \
         rsync \
-        software-properties-common \
+        cmake \
+        g++ \
+        swig \
+        vim \
+        git \
+        curl \
+        wget \
         unzip \
         zsh \
-        libjpeg-dev libfreetype6-dev zlib1g-dev \
-        git vim \
-        locales \
+        git \
+        screen \
+        openjdk-8-jdk \
+        openjdk-8-jre-headless \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
-
-# install good vim.
-RUN curl http://j.mp/spf13-vim3 -L -o - | sh
 
 # install python3.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         python3 \
+        python3-numpy \
         python3-dev \
         python3-pip \
-        python-tk \
-        python-numpy \
+        python3-wheel \
+        python3-tk \
     && cd /usr/local/bin && ln -s /usr/bin/python3 python \
     && pip3 install --upgrade pip setuptools \
     && if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi
@@ -63,13 +78,11 @@ RUN pip --no-cache-dir install \
         && \
     python -m ipykernel.kernelspec
 
-# install pytorch
-RUN pip install http://download.pytorch.org/whl/cu80/torch-0.2.0.post3-cp35-cp35m-manylinux1_x86_64.whl && \
-    pip install torchvision
+# install good vim.
+RUN curl http://j.mp/spf13-vim3 -L -o - | sh
 
-# install Tensorflow GPU Version
-RUN pip --no-cache-dir install --upgrade --ignore-installed  \
-    https://pypi.python.org/packages/1e/be/b72fd4690c2a557ed4a253364df8a328860851008935b84dfe47615b6eb5/tensorflow_gpu-1.3.0rc0-cp35-cp35m-manylinux1_x86_64.whl#md5=e0d732610e060191f11c085b3e189cd8
+# configure environments.
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 # configure user.
 ENV SHELL=/bin/bash \
@@ -79,7 +92,7 @@ ENV SHELL=/bin/bash \
     NB_GID=11169
 ENV HOME=/home/$NB_USER
 
-ADD ml_prod/fix-permissions /usr/local/bin/fix-permissions
+ADD base/fix-permissions /usr/local/bin/fix-permissions
 RUN chmod +x /usr/local/bin/fix-permissions
 RUN groupadd $NB_GROUP -g $NB_GID
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
@@ -87,16 +100,9 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     usermod -aG sudo,adm ${NB_USER} && \
     fix-permissions $HOME
 
-
 # Set up our notebook config.
-COPY ml_prod/jupyter_notebook_config.py /root/.jupyter/
-COPY ml_prod/run_jupyter.sh /
+COPY base/jupyter_notebook_config.py /root/.jupyter/
+COPY base/run_jupyter.sh /
 
-# TensorBoard
-EXPOSE 6006
 # IPython
 EXPOSE 8888
-
-############ user: user permission
-USER $NB_USER
-WORKDIR $HOME

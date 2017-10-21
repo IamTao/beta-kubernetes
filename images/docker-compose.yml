@@ -1,12 +1,14 @@
 version: '2'
 services:
-    mlo_ml:
+    base:
         build:
             context: .
-            dockerfile: ml/Dockerfile
+            dockerfile: base/Dockerfile
+        image:  itamtao/base
+    mlo:
+        build:
+            context: .
+            dockerfile: mlo/Dockerfile
         image:  ntxvm015.iccluster.epfl.ch/mlo/ml:1.0
-    mlo_ml_prod:
-        build:
-            context: .
-            dockerfile: ml_prod/Dockerfile.prod
-        image:  ntxvm015.iccluster.epfl.ch/mlo/ml_prod:1.0
+        depends_on:
+          - base

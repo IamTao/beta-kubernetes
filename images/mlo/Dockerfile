@@ -2,15 +2,13 @@ FROM itamtao/base
 MAINTAINER Tao Lin <itamtao@gmail.com>
 
 # install Tensorflow GPU Version
-RUN pip --no-cache-dir install --upgrade --ignore-installed  \
-    https://pypi.python.org/packages/1e/be/b72fd4690c2a557ed4a253364df8a328860851008935b84dfe47615b6eb5/tensorflow_gpu-1.3.0rc0-cp35-cp35m-manylinux1_x86_64.whl#md5=e0d732610e060191f11c085b3e189cd8
+ENV TENSORFLOW_VERSION 1.3.0
+RUN pip --no-cache-dir install \
+    http://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-${TENSORFLOW_VERSION}-cp27-none-linux_x86_64.whl
 
 # install pytorch
-RUN git clone https://github.com/pytorch/pytorch.git /root/pytorch && cd /root/pytorch && \
-    git submodule update --init && \
-    pip install -r requirements.txt && \
-    python setup.py install && rm -rf /root/pytorch
-RUN git clone https://github.com/pytorch/vision.git && cd vision && pip install -v .
+RUN pip --no-cache-dir install http://download.pytorch.org/whl/cu80/torch-0.2.0.post3-cp27-cp27mu-manylinux1_x86_64.whl
+RUN pip --no-cache-dir install torchvision
 
 ############ user: user permission
 USER $NB_USER

@@ -50,15 +50,13 @@ RUN apt-get install -y \
 # install python3.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        python3 \
-        python3-numpy \
-        python3-dev \
-        python3-pip \
-        python3-wheel \
-        python3-tk \
-    && cd /usr/local/bin && ln -s /usr/bin/python3 python \
-    && pip3 install --upgrade pip setuptools \
-    && if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi
+        python \
+        python-numpy \
+        python-dev \
+        python-pip \
+        python-wheel \
+        python-tk \
+    && pip install --upgrade pip setuptools
 
 # install some python packages.
 RUN pip --no-cache-dir install \

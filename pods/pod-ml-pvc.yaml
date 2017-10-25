@@ -9,36 +9,58 @@ spec:
     - name: site-data
       persistentVolumeClaim:
         claimName: pvc-nfs-mlo
-    - hostPath:
+    - name: bin
+      hostPath:
         path: /usr/lib/nvidia-375/bin
-      name: bin
-    - hostPath:
+    - name: lib
+      hostPath:
         path: /usr/lib/nvidia-375
-      name: lib
+    - name: libcuda-so
+      hostPath:
+        path: /usr/lib/x86_64-linux-gnu/libcuda.so
+    - name: libcuda-so-1
+      hostPath:
+        path: /usr/lib/x86_64-linux-gnu/libcuda.so.1
+    - name: libcuda-so-375-39
+      hostPath:
+        path: /usr/lib/x86_64-linux-gnu/libcuda.so.375.39
   containers:
     - name:  ml
+      image: ntxvm015.iccluster.epfl.ch/mlo/ml:1.0
       imagePullPolicy: Always
-      image: ntxvm015.iccluster.epfl.ch/mlo/ml_prod:1.0
       securityContext:
         privileged: true
-      resources:
-        limits:
-          alpha.kubernetes.io/nvidia-gpu: 2
+        # runAsUser: 144057
+        # fsGroup: 11169
+      command:
+        - sleep
+        - infinity
+      env:
+        - name: LD_LIBRARY_PATH
+          value: /usr/lib/nvidia
       ports:
         - containerPort: 8888
           name: notebook
         - containerPort: 6006
           name: tensorboard
+      resources:
+        limits:
+          alpha.kubernetes.io/nvidia-gpu: 2
       volumeMounts:
         - mountPath: /usr/local/nvidia/bin
           name: bin
-        - mountPath: /usr/local/nvidia/lib
+        - mountPath: /usr/lib/nvidia
           name: lib
+        - mountPath: /usr/lib/x86_64-linux-gnu/libcuda.so
+          name: libcuda-so
+        - mountPath: /usr/lib/x86_64-linux-gnu/libcuda.so.1
+          name: libcuda-so-1
+        - mountPath: /usr/lib/x86_64-linux-gnu/libcuda.so.375.39
+          name: libcuda-so-375-39
         - mountPath: /mlodata1
           name: site-data
-      command:
-        - sleep
-        - infinity
+  imagePullSecrets:
+  - name: icitkey
 ---
 apiVersion: v1
 kind: Service

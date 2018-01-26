@@ -75,6 +75,7 @@ RUN pip --no-cache-dir install \
         nltk \
         && \
     python -m ipykernel.kernelspec
+RUN pip install numpy --upgrade
 
 # install good vim.
 RUN curl http://j.mp/spf13-vim3 -L -o - | sh

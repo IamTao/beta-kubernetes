@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-pytorch
+  labels:
+    name: pod-pytorch
+spec:
+  hostIPC: true
+  volumes:
+    - name: site-data
+      persistentVolumeClaim:
+        claimName: pvc-nfs-mlo
+  containers:
+    - name:  ml
+      image: ntxvm015.iccluster.epfl.ch/mlo/pytorch-mpi:1.0
+      imagePullPolicy: Always
+      securityContext:
+        privileged: true
+      command:
+        - sleep
+        - infinity
+      ports:
+        - containerPort: 8888
+          name: notebook
+        - containerPort: 6006
+          name: tensorboard
+      resources:
+        limits:
+          nvidia.com/gpu: 2 # requesting 2 GPUs
+      volumeMounts:
+        - mountPath: /mlodata1
+          name: site-data
+  imagePullSecrets:
+  - name: icitkey
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-ml
+  labels:
+    name: svc-ml
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8888
+      name: notebook
+    - port: 6006
+      name: tensorboard
+  selector:
+    name: pod-pytorch

@@ -1,21 +1,14 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: pod-tf
+  name: dmlb-master
   labels:
-    name: pod-tf
+    name: dmlb-master
+    role: master
 spec:
-  hostIPC: true
-  volumes:
-    - name: site-data
-      persistentVolumeClaim:
-        claimName: pvc-nfs-mlo
   containers:
-    - name:  ml
-      image: ntxvm015.iccluster.epfl.ch/mlo/tensorflow:1.0
-      imagePullPolicy: Always
-      securityContext:
-        privileged: true
+    - name:  dmlb-master
+      image: ntxvm015.iccluster.epfl.ch/mlo/base
       command:
         - sleep
         - infinity
@@ -24,21 +17,28 @@ spec:
           name: notebook
         - containerPort: 6006
           name: tensorboard
+        - containerPort: 22
+          name: ssh
+      env:
+        - name: ROLE
+          value: "master"
       resources:
         limits:
-          nvidia.com/gpu: 2 # requesting 2 GPUs
+          nvidia.com/gpu: 1
       volumeMounts:
         - mountPath: /mlodata1
-          name: site-data
-  imagePullSecrets:
-  - name: icitkey
+          name: mlodata
+  volumes:
+    - name: mlodata
+      persistentVolumeClaim:
+        claimName: mlo-scratch
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: svc-ml
+  name: dmlb-master
   labels:
-    name: svc-ml
+    name: dmlb-master
 spec:
   type: LoadBalancer
   ports:
@@ -46,5 +46,7 @@ spec:
       name: notebook
     - port: 6006
       name: tensorboard
+    - port: 22
+      name: ssh
   selector:
-    name: pod-tf
+    name: dmlb-master

@@ -1,0 +1,26 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: pyspark
+spec:
+  containers:
+    - name: pyspark
+      image: ntxvm015.iccluster.epfl.ch/icit-images/spark:2.2.0
+      imagePullPolicy: Always
+      command: 
+      - sleep
+      - infinity
+      ports:
+        - containerPort: 8081
+      volumeMounts:
+      - mountPath: /icit
+        name: icit
+      - mountPath: /opt/spark/conf
+        name: spark-config
+  volumes:
+    - name: icit
+      persistentVolumeClaim:
+        claimName:  ic-it-scratch
+    - name: spark-config
+      configMap:
+        name: spark-cm

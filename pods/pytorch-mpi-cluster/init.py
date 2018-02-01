@@ -62,9 +62,20 @@ def get_existing_pods_info(existing_pod_names):
 
 
 def save_hostfile(all_info):
-    ips = '\n'.join([info['name'] for key, info in all_info.items()])
-    write_txt(ips, 'hostfile')
+    ips = '\n'.join(
+        ['{} slots={}'.format(info['ip'], info['num_gpu'])
+         for key, info in all_info.items()]
+    )
+    write_txt(ips, 'kubernetes/hostfile')
     return ips
+
+
+def setup_ssh(existing_pod_names):
+    for existing_pod_name in existing_pod_names:
+        print('setup ssh connection for {}...'.format(existing_pod_name))
+        os.system(
+            "kubectl exec -it {} bash 'entrypoint.sh'".format(
+                existing_pod_name))
 
 
 def main(args):
@@ -80,6 +91,9 @@ def main(args):
 
     print(' get IPs and save them to path.')
     save_hostfile(existing_pods_info)
+
+    print('setup ssh connections')
+    setup_ssh(existing_pod_names)
 
 
 if __name__ == '__main__':

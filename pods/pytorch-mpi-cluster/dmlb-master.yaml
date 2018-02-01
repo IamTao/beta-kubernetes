@@ -8,7 +8,7 @@ metadata:
 spec:
   containers:
     - name:  dmlb-master
-      image: ntxvm015.iccluster.epfl.ch/mlo/base
+      image: ntxvm015.iccluster.epfl.ch/mlo/pytorch-mpi
       command:
         - sleep
         - infinity

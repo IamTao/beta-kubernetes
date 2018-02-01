@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: dmlb-worker
-          image: ntxvm015.iccluster.epfl.ch/mlo/base
+          image: ntxvm015.iccluster.epfl.ch/mlo/pytorch-mpi
           command:
             - sleep
             - infinity

@@ -5,10 +5,10 @@ services:
             context: .
             dockerfile: base/Dockerfile
         image:  itamtao/base
-    mlo:
+    pytorch-mpi:
         build:
             context: .
-            dockerfile: mlo/Dockerfile
-        image:  ntxvm015.iccluster.epfl.ch/mlo/ml:1.0
+            dockerfile: pytorch-mpi/Dockerfile
+        image:  itamtao/pytorch-mpi:gpu
         depends_on:
           - base

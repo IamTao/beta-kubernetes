@@ -7,10 +7,10 @@ metadata:
 spec:
   containers:
   - name:  test
-    image: ntxvm015.iccluster.epfl.ch/mlo/pytorch-mpi:1.0
+    image: ntxvm015.iccluster.epfl.ch/mlo/test
     command:
       - sleep
       - infinity
     resources:
       limits:
-        nvidia.com/gpu: 2 # requesting 2 GPUs
+        nvidia.com/gpu: 4 # requesting 2 GPUs

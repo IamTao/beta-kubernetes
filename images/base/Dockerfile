@@ -1,12 +1,11 @@
-FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04
-
+FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu14.04
 MAINTAINER Tao Lin <itamtao@gmail.com>
 
-# configure some environments.
-RUN "sh" "-c" "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
 
 # install some necessary tools.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN echo "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
         pkg-config \
@@ -25,7 +24,9 @@ RUN apt-get install -y \
         libcupti-dev \
         pkg-config \
         libav-tools \
-        libjpeg-dev zlib1g-dev \
+        libjpeg-dev \
+        libpng-dev \
+        zlib1g-dev \
         locales
 RUN apt-get install -y \
         sudo \
@@ -41,42 +42,10 @@ RUN apt-get install -y \
         zsh \
         git \
         screen \
-        openjdk-8-jdk \
-        openjdk-8-jre-headless \
-        && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# install python3.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        python \
-        python-numpy \
-        python-dev \
-        python-pip \
-        python-wheel \
-        python-tk \
-    && pip install --upgrade pip setuptools
-
-# install some python packages.
-RUN pip --no-cache-dir install \
-        ipykernel \
-        jupyter \
-        matplotlib \
-        scipy \
-        scikit-learn \
-        sklearn \
-        pandas \
-        Pillow \
-        h5py \
-        autograd \
-        powerlaw \
-        seaborn \
-        nltk \
-        && \
-    python -m ipykernel.kernelspec
-RUN pip install numpy --upgrade
-
+        tmux \
+        openjdk-7-jdk \
+        openjdk-7-jre-headless
+RUN apt-get install -y openssh-server
 # install good vim.
 RUN curl http://j.mp/spf13-vim3 -L -o - | sh
 
@@ -93,15 +62,43 @@ ENV HOME=/home/$NB_USER
 
 ADD base/fix-permissions /usr/local/bin/fix-permissions
 RUN chmod +x /usr/local/bin/fix-permissions
+ADD base/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 RUN groupadd $NB_GROUP -g $NB_GID
-RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
+RUN useradd -m -s /bin/bash -N -u $NB_UID -g $NB_GID $NB_USER && \
     echo "${NB_USER}:${NB_USER}" | chpasswd && \
-    usermod -aG sudo,adm ${NB_USER} && \
+    usermod -aG sudo,adm,root ${NB_USER} && \
     fix-permissions $HOME
+RUN echo 'lin ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo
 
-# Set up our notebook config.
-COPY base/jupyter_notebook_config.py /root/.jupyter/
-COPY base/run_jupyter.sh /
+# Default ssh config file that skips (yes/no) question when first login to the host
+RUN mkdir /var/run/sshd
+RUN  sed -i "s/#PasswordAuthentication.*/PasswordAuthentication no/g" /etc/ssh/sshd_config \
+  && sed -i "s/#PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config \
+  && sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config \
+  && sed -i "s/#AuthorizedKeysFile/AuthorizedKeysFile/g" /etc/ssh/sshd_config
+RUN /usr/bin/ssh-keygen -A
 
-# IPython
+ENV SSHDIR $HOME/.ssh
+RUN mkdir -p $SSHDIR \
+    && chmod go-w $HOME/ \
+    && chmod 700 $SSHDIR \
+    && touch $SSHDIR/authorized_keys \
+    && chmod 600 $SSHDIR/authorized_keys \
+    && chown -R ${NB_USER}:${NB_GROUP} ${SSHDIR} \
+    && chown -R ${NB_USER}:${NB_GROUP} /etc/ssh/*
+
+###### switch to user and compile test example.
+USER ${NB_USER}
+RUN ssh-keygen -b 2048 -t rsa -f $SSHDIR/id_rsa -q -N ""
+RUN cat ${SSHDIR}/*.pub >> ${SSHDIR}/authorized_keys
+RUN echo "StrictHostKeyChecking no" > ${SSHDIR}/config
+
+
+###### switch to root
+# expose port for ssh and start ssh service.
+EXPOSE 22
+# expose port for notebook.
 EXPOSE 8888
+# expose port for tensorboard.
+EXPOSE 6666

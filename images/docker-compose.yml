@@ -5,10 +5,3 @@ services:
             context: .
             dockerfile: base/Dockerfile
         image:  itamtao/base
-    pytorch-mpi:
-        build:
-            context: .
-            dockerfile: pytorch-mpi/Dockerfile
-        image:  itamtao/pytorch-mpi:gpu
-        depends_on:
-          - base

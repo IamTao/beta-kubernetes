@@ -81,7 +81,7 @@ $ kubectl create -f pod-ubuntu-gpu-pvc.yaml
 ### Self-hosted registry
 Go to
 ```
-https://ntxvm015.iccluster.epfl.ch
+https://ic-registry.epfl.ch
 ```
 and use your gaspar to login in.
 
@@ -97,12 +97,12 @@ You can also add your own configuration in the `Dockerfile`.
 ### Deploy
 Once you get your image, you can push to the remote host:
 ```sh
-docker push ntxvm015.iccluster.epfl.ch/mlo/ml:1.0
+docker push ic-registry.epfl.ch/mlo/ml:1.0
 ```
 
 Note that you should first login in the self-hosted registry in your console:
 ```sh
-docker login ntxvm015.iccluster.epfl.ch
+docker login ic-registry.epfl.ch
 ```
 
 ### Run

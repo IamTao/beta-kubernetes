@@ -55,9 +55,9 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 # configure user.
 ENV SHELL=/bin/bash \
     NB_USER=lin \
-    NB_UID=144057 \
-    NB_GROUP=MLO-unit \
-    NB_GID=11169
+    NB_UID=<your uid at iccluster> \
+    NB_GROUP=<your unit at iccluster> \
+    NB_GID=<your group id at iccluster>
 ENV HOME=/home/$NB_USER
 
 ADD base/fix-permissions /usr/local/bin/fix-permissions
